@@ -1,7 +1,108 @@
-# Vue 3 + Vite
+# Lucky Hash Game
 
-This template should help get you started developing with Vue 3 in Vite. The template uses Vue 3 `<script setup>` SFCs, check out the [script setup docs](https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup) to learn more.
+欢迎来到 Lucky Hash Game，这是一个基于 SHA-256 哈希算法的幸运数字游戏。在这里，你可以体验到由随机性带来的无限乐趣，并且有机会赢得高分。下面是游戏的详细介绍和玩法指南。
 
-## Recommended IDE Setup
+## 游戏规则
 
-- [VS Code](https://code.visualstudio.com/) + [Vue - Official](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (previously Volar) and disable Vetur
+1. **输入幸运号码**：首先，你需要输入一个五位数的幸运号码。
+2. **输入幸运句子**：接着，输入一句不超过20字的幸运句子。
+3. **发送至语言模型**：我们将你的幸运句子发送给语言模型（LLM），获取它的回复。
+4. **哈希处理**：将幸运句子和LLM的回复拼接在一起，然后使用 SHA-256 哈希函数进行处理。
+5. **转换为16进制**：将得到的哈希值转换为16进制。
+6. **确定中奖号码**：取哈希值的最后五位作为你的中奖号码。
+
+## 得分规则
+
+- 得分基于你的幸运号码与中奖号码的匹配程度。
+- 如果没有任何数字匹配，得分为0。
+- 如果有匹配的数字，根据匹配的位数和数字本身计算得分。
+
+## 游戏特色
+
+- **基于SHA-256算法**：游戏结果完全基于运气，不可预测，保证了公平性。
+- **简单易玩**：只需输入幸运号码和句子，即可参与游戏。
+- **历史记录**：你可以查看自己的历史游戏记录，包括幸运句子、LLM的回复、哈希结果、中奖号码等。
+- **得分统计**：实时显示你的总分和尝试次数，让你了解自己的游戏表现。
+
+## 如何开始
+
+1. 打开游戏页面。
+2. 在指定的输入框中输入你的幸运号码和幸运句子。
+3. 点击“Lucky!”按钮开始游戏。
+4. 查看结果，并享受游戏带来的乐趣。
+
+## 技术实现
+
+- 前端页面使用 Vue.js 框架构建。
+- 使用 CryptoJS 库进行 SHA-256 哈希计算。
+- 后端API（如果需要）通过 `fetch` 请求与前端进行通信。
+- 本地存储（localStorage）用于保存游戏历史记录。
+
+## 贡献与反馈
+
+如果你有任何建议或想要贡献代码，请提交 Pull Request 或创建 Issue。
+
+## 许可
+
+本项目采用 [MIT 许可证](LICENSE)。
+
+---
+
+祝你在 Lucky Hash Game 中玩得愉快，好运连连！
+
+---
+### 得分计算方法详解
+
+在 Lucky Hash Game 中，得分计算是一个有趣的环节，它基于你的幸运号码与系统生成的中奖号码之间的匹配程度。下面是 `calculateScore` 函数的详细解释：
+
+#### 函数定义
+```javascript
+calculateScore(luckyNumber, winningNumber) {
+  let baseScore = '';
+  let matchCount = 0;
+  ...
+}
+```
+这个函数接收两个参数：`luckyNumber`（用户输入的幸运号码）和 `winningNumber`（系统根据哈希值生成的中奖号码）。
+
+#### 基数和匹配数字的计算
+```javascript
+for (let i = 0; i < luckyNumber.length; i++) {
+  if (luckyNumber[i] === winningNumber[i]) {
+    baseScore += luckyNumber[i];
+    matchCount++;
+  }
+}
+```
+这段代码遍历用户输入的幸运号码中的每一个数字，并且检查它是否与中奖号码中相同位置的数字相匹配。如果匹配，它将：
+- 将匹配的数字添加到 `baseScore` 字符串中。
+- 增加 `matchCount` 的计数，这个变量用来记录匹配的位数。
+
+#### 得分计算
+```javascript
+if (matchCount === 0) {
+  return '0';
+} else {
+  const multiplier = Math.pow(10, matchCount);
+  return (parseInt(baseScore, 10) * multiplier).toString();
+}
+```
+在计算得分时，如果没有任何数字匹配（`matchCount` 为 0），则得分为 0。
+
+如果有至少一个数字匹配，得分计算如下：
+- 使用 `Math.pow(10, matchCount)` 计算一个乘数，这个乘数是 10 的 `matchCount` 次方。这意味着匹配的位数越多，乘数越大，得分也就越高。
+- 将 `baseScore` 字符串转换为整数，并与乘数相乘得到最终得分。
+- 将最终得分转换为字符串并返回。
+
+#### 例子
+假设：
+- 用户输入的幸运号码是 `12345`。
+- 中奖号码是 `13245`。
+
+在这个例子中：
+- `matchCount` 将会是 3，因为有 3 位数匹配（`2`, `3`, `5`）。
+- `baseScore` 将会是 `235`，这是所有匹配数字的组合。
+- 乘数将会是 `1000`（因为 `matchCount` 是 3，所以 `10^3`）。
+- 最终得分将会是 `235 * 1000 = 235000`。
+
+通过这种方式，得分系统奖励那些号码匹配位数更多的玩家，增加了游戏的趣味性和挑战性。

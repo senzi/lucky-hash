@@ -11,7 +11,7 @@
         <a class="btn btn-ghost text-xl">Lucky Hash Game</a>
       </div>
       <div class="navbar-end">
-        <div class="badge badge-primary badge-outline">V0.0.2</div>
+        <div class="badge badge-primary badge-outline">V0.1.0</div>
       </div>
     </div>
 
@@ -80,6 +80,7 @@
   <footer class="footer footer-center p-4 bg-base-300 text-base-content">
     <aside>
       <p><span id="busuanzi_container_site_pv">本站总访问量<span id="busuanzi_value_site_pv"></span>次</span></p>
+      <p>总分/尝试次数: {{ totalScoreAndAttempts }}</p>
     </aside>
   </footer>
 </template>
@@ -98,6 +99,11 @@ export default {
   computed: {
     sortedHistoryRecords() {
       return this.historyRecords.slice().reverse();
+    },
+    totalScoreAndAttempts() {
+      const totalScore = this.historyRecords.reduce((acc, record) => acc + parseInt(record.score, 10), 0);
+      const attempts = this.historyRecords.length;
+      return `${totalScore}/${attempts}`;
     },
   },
   methods: {
@@ -156,6 +162,9 @@ export default {
           score: score
         });
 
+        // 保存到 localStorage
+        this.saveHistoryToLocalStorage();
+
         // 清空输入框
         this.luckyNumber = '';
         this.luckySentence = '';
@@ -168,13 +177,24 @@ export default {
 
     // 计算得分的方法
     calculateScore(luckyNumber, winningNumber) {
-      let score = '';
+      let baseScore = '';
+      let matchCount = 0;
+
+      // 计算基数和匹配的数字个数
       for (let i = 0; i < luckyNumber.length; i++) {
         if (luckyNumber[i] === winningNumber[i]) {
-          score += luckyNumber[i];
+          baseScore += luckyNumber[i];
+          matchCount++;
         }
       }
-      return score.length > 0 ? score : '0';
+
+      // 计算最终得分
+      if (matchCount === 0) {
+        return '0';
+      } else {
+        const multiplier = Math.pow(10, matchCount);
+        return (parseInt(baseScore, 10) * multiplier).toString();
+      }
     },
 
     // 用于标记哈希值中最后五个数字的方法
@@ -192,12 +212,37 @@ export default {
       }
       return highlightedHash;
     },
+
     // 格式化哈希值的方法
     formatHash(hash) {
       if (hash.length <= 20) {
         return hash;
       }
       return '...' + hash.slice(-20);
+    },
+
+    // 保存历史记录到 localStorage
+    saveHistoryToLocalStorage() {
+      localStorage.setItem('historyRecords', JSON.stringify(this.historyRecords));
+    },
+
+    // 从 localStorage 加载历史记录
+    loadHistoryFromLocalStorage() {
+      const storedRecords = localStorage.getItem('historyRecords');
+      if (storedRecords) {
+        this.historyRecords = JSON.parse(storedRecords);
+      }
+    }
+  },
+  mounted() {
+    this.loadHistoryFromLocalStorage();
+  },
+  watch: {
+    historyRecords: {
+      handler() {
+        this.saveHistoryToLocalStorage();
+      },
+      deep: true
     }
   }
 };
