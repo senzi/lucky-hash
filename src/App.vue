@@ -111,7 +111,6 @@ export default {
   },
   methods: {
     async getLucky() {
-      this.isLoading = true;
       // 检查输入的幸运号码是否为5位数字
       if (!/^\d{5}$/.test(this.luckyNumber)) {
         alert('请输入一个五位数的幸运号码！');
@@ -125,6 +124,7 @@ export default {
       }
 
       try {
+        this.isLoading = true;
         // 发送幸运句子到API
         const response = await fetch('https://lucky-hash.sennes.workers.dev/', {
           method: 'POST',
