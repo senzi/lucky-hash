@@ -42,7 +42,9 @@
         v-model="luckySentence" />
     </div>
     <div class="center-flex">
-      <button class="btn btn-primary" @click="getLucky">Lucky!</button>
+      <button class="btn btn-primary" :disabled="isLoading" @click="getLucky">
+        {{ isLoading ? '正在开奖...' : 'Lucky!' }}
+      </button>
     </div>
 
     <!-- 历史记录表格 -->
@@ -93,7 +95,8 @@ export default {
     return {
       luckyNumber: '',
       luckySentence: '',
-      historyRecords: []
+      historyRecords: [],
+      isLoading: false,
     };
   },
   computed: {
@@ -108,6 +111,7 @@ export default {
   },
   methods: {
     async getLucky() {
+      this.isLoading = true;
       // 检查输入的幸运号码是否为5位数字
       if (!/^\d{5}$/.test(this.luckyNumber)) {
         alert('请输入一个五位数的幸运号码！');
@@ -168,10 +172,12 @@ export default {
         // 清空输入框
         this.luckyNumber = '';
         this.luckySentence = '';
+        this.isLoading = false;
 
       } catch (error) {
         console.error('出错了:', error);
         alert('处理过程中出错，请稍后再试！');
+        this.isLoading = false;
       }
     },
 
